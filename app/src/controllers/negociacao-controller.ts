@@ -4,22 +4,25 @@ import { logarTempoDeExecucao } from '../decorators/logar-tempo-de-execucao.js';
 import { DiasDaSemana } from '../enums/dias-da-semana.js';
 import { Negociacao } from '../models/negociacao.js';
 import { Negociacoes } from '../models/negociacoes.js';
+import { NegociacoesService } from '../services/negociacoes-service.js';
 import { MensagemView } from '../views/mensagem-view.js';
 import { NegociacoesView } from '../views/negociacoes-view.js';
 
 export class NegociacaoController {
   @domInjector('#data')
   private inputData: HTMLInputElement;
-  
+
   @domInjector('#quantidade')
   private inputQuantidade: HTMLInputElement;
 
   @domInjector('#valor')
   private inputValor: HTMLInputElement;
-  
+
   private negociacoes = new Negociacoes();
   private negociacoesView = new NegociacoesView('#negociacoesView');
   private mensagemView = new MensagemView('#mensagemView');
+
+  private negociacoesService = new NegociacoesService;
 
   constructor() {
     this.negociacoesView.update(this.negociacoes);
@@ -48,6 +51,17 @@ export class NegociacaoController {
     this.atualizaView();
   }
 
+  public importaDados(): void {
+    this.negociacoesService.obterNegociacoesDoDia()
+      .then(negociacoes => {
+        for (let negociacao of negociacoes) {
+          this.negociacoes.adiciona(negociacao);
+        }
+
+        this.negociacoesView.update(this.negociacoes);
+      })
+  }
+
   private ehDiaUtil(data: Date) {
     return data.getDay() > DiasDaSemana.DOMINGO
       && data.getDay() < DiasDaSemana.SABADO;
@@ -64,8 +78,5 @@ export class NegociacaoController {
     this.negociacoesView.update(this.negociacoes);
     this.mensagemView.update('Negociação adicionada com sucesso');
   }
-}
-function domInject(arg0: string): (target: NegociacaoController, propertyKey: "inputData") => void {
-  throw new Error('Function not implemented.');
 }
 
